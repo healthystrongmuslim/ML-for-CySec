@@ -365,6 +365,8 @@ class DataPreprocessor:
             # Binary classification: benign (0) vs all attacks (1)
             y = y.apply(lambda x: 0 if 'benign' in str(x).lower() else 1)
             y = y.values
+            # Set class names for visualization/interpretability
+            self.class_names = np.array(['benign', 'malicious'])
         else:
             # Multi-class classification
             y = self.encode_labels(y, fit=fit)

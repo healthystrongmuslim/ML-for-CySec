@@ -48,14 +48,24 @@ class Visualizer:
             normalize: Whether to normalize the matrix
         """
         if normalize:
-            cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+            # Avoid division by zero when a row sums to 0
+            row_sums = cm.sum(axis=1)[:, np.newaxis]
+            row_sums[row_sums == 0] = 1
+            cm = cm.astype('float') / row_sums
             fmt = '.2f'
         else:
             fmt = 'd'
-        
+
         plt.figure(figsize=(10, 8))
+        # Prepare tick labels: use provided class_names or default numeric labels
+        n = cm.shape[0]
+        if class_names is None:
+            tick_labels = [str(i) for i in range(n)]
+        else:
+            tick_labels = class_names
+
         sns.heatmap(cm, annot=True, fmt=fmt, cmap='Blues',
-                   xticklabels=class_names, yticklabels=class_names)
+                   xticklabels=tick_labels, yticklabels=tick_labels)
         plt.title(title)
         plt.ylabel('True Label')
         plt.xlabel('Predicted Label')

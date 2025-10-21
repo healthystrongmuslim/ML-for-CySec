@@ -342,8 +342,14 @@ def main():
             # Confusion matrix
             y_pred = model.predict(X_test)
             cm = utils.compute_confusion_matrix(y_test, y_pred)
+            # Ensure class_names is set (fallback to numeric labels)
+            if class_names is None:
+                class_names_to_use = [str(i) for i in range(cm.shape[0])]
+            else:
+                class_names_to_use = class_names
+
             visualizer.plot_confusion_matrix(
-                cm, class_names=class_names,
+                cm, class_names=class_names_to_use,
                 title=f'Confusion Matrix - {model_name}',
                 filename=f'confusion_matrix_{safe_name}.png'
             )
