@@ -196,6 +196,8 @@ def train_svm(X_train: np.ndarray, y_train: np.ndarray,
         max_iterations=config.SVM['max_iterations'],
         tolerance=config.SVM['tolerance'],
         learning_rate=config.SVM['learning_rate'],
+        batch_size=config.SVM.get('batch_size', config.LOGISTIC_REGRESSION.get('batch_size', 32)),
+        optimization=config.OPTIMIZATION_METHOD,
         verbose=config.VERBOSE
     )
     

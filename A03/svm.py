@@ -8,6 +8,13 @@ from typing import Callable, Optional
 import logging
 import utils
 import config
+# Optional kernel approximation imports
+try:
+    from sklearn.kernel_approximation import RBFSampler
+    from sklearn.preprocessing import PolynomialFeatures
+except Exception:
+    RBFSampler = None
+    PolynomialFeatures = None
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +32,8 @@ class SVM:
     
     def __init__(self, C: float = 1.0, kernel: str = 'linear', gamma: float = 'scale',
                  degree: int = 3, max_iterations: int = 1000, tolerance: float = 1e-3,
-                 learning_rate: float = 0.001, verbose: bool = True):
+                 learning_rate: float = 0.001, batch_size: int = 32,
+                 optimization: str = 'gradient_descent', verbose: bool = True):
         """
         Initialize SVM model
         
@@ -46,6 +54,8 @@ class SVM:
         self.max_iterations = max_iterations
         self.tolerance = tolerance
         self.learning_rate = learning_rate
+        self.batch_size = batch_size
+        self.optimization = optimization
         self.verbose = verbose
         
         self.weights = None
@@ -55,6 +65,8 @@ class SVM:
         self.models = []  # For multi-class (one-vs-rest)
         self.loss_history = []
         self.gamma_value = None
+        # Feature map for kernel approximation (used for SGD/mini-batch with non-linear kernels)
+        self.feature_map = None
         
     def _compute_gamma(self, X: np.ndarray) -> float:
         """Compute gamma value for kernel"""
@@ -173,7 +185,30 @@ class SVM:
             # Binary classification
             # Convert labels to -1 and 1
             y_binary = np.where(y == 0, -1, 1)
-            self._fit_binary(X, y_binary)
+            # If using non-linear kernel with SGD/mini-batch, use kernel approximation mapping
+            if self.kernel_name in ('rbf', 'polynomial') and self.optimization in ('sgd', 'mini_batch'):
+                if self.kernel_name == 'rbf':
+                    if RBFSampler is None:
+                        logger.warning('RBFSampler not available; falling back to full-batch kernel computations')
+                        self._fit_binary(X, y_binary)
+                        return self
+                    n_components = config.SVM.get('rff_components', 200)
+                    self.feature_map = RBFSampler(gamma=self.gamma_value, n_components=n_components, random_state=config.RANDOM_STATE)
+                    X_mapped = self.feature_map.fit_transform(X)
+                else:  # polynomial
+                    if PolynomialFeatures is None:
+                        logger.warning('PolynomialFeatures not available; falling back to full-batch kernel computations')
+                        self._fit_binary(X, y_binary)
+                        return self
+                    # Be cautious: polynomial expansion can be large; respect degree
+                    poly = PolynomialFeatures(degree=self.degree, include_bias=False)
+                    self.feature_map = poly
+                    X_mapped = self.feature_map.fit_transform(X)
+
+                # Train in the mapped feature space using linear SVM updates
+                self._fit_binary(X_mapped, y_binary)
+            else:
+                self._fit_binary(X, y_binary)
         else:
             # Multi-class classification (one-vs-rest)
             self.models = []
@@ -193,9 +228,12 @@ class SVM:
                     max_iterations=self.max_iterations,
                     tolerance=self.tolerance,
                     learning_rate=self.learning_rate,
+                    batch_size=self.batch_size,
+                    optimization=self.optimization,
                     verbose=False
                 )
-                binary_svm._fit_binary(X, y_binary)
+                # Use fit so each binary SVM can apply kernel approximation if requested
+                binary_svm.fit(X, y_binary)
                 self.models.append(binary_svm)
         
         return self
@@ -216,23 +254,76 @@ class SVM:
         
         self.loss_history = []
         
-        # Training loop
+        # Training loop with support for SGD and mini-batch (linear kernel only)
         for iteration in range(self.max_iterations):
-            # Compute loss
-            loss = self._compute_hinge_loss(X, y)
-            self.loss_history.append(loss)
-            
-            # Compute gradients
-            dw, db = self._compute_gradients(X, y)
-            
-            # Update weights
-            self.weights -= self.learning_rate * dw
-            self.bias -= self.learning_rate * db
-            
+            if self.optimization == 'gradient_descent':
+                # Full-batch
+                loss = self._compute_hinge_loss(X, y)
+                self.loss_history.append(loss)
+
+                dw, db = self._compute_gradients(X, y)
+                self.weights -= self.learning_rate * dw
+                self.bias -= self.learning_rate * db
+
+            elif self.optimization == 'sgd':
+                # Stochastic gradient descent (per-sample updates)
+                # If a feature_map was used, the input X is already mapped and SGD is supported
+                if (self.kernel_name != 'linear') and (self.feature_map is None):
+                    logger.warning('SGD is supported efficiently only for linear kernel (or when kernel approximation is used); falling back to full-batch')
+                    loss = self._compute_hinge_loss(X, y)
+                    self.loss_history.append(loss)
+                    dw, db = self._compute_gradients(X, y)
+                    self.weights -= self.learning_rate * dw
+                    self.bias -= self.learning_rate * db
+                else:
+                    indices = np.random.permutation(n_samples)
+                    total_loss = 0.0
+                    for i in indices:
+                        Xi = X[i:i+1]
+                        yi = y[i:i+1]
+                        loss_i = self._compute_hinge_loss(Xi, yi)
+                        total_loss += loss_i
+                        dw, db = self._compute_gradients(Xi, yi)
+                        self.weights -= self.learning_rate * dw
+                        self.bias -= self.learning_rate * db
+                    loss = total_loss / n_samples
+                    self.loss_history.append(loss)
+
+            elif self.optimization == 'mini_batch':
+                # Mini-batch gradient descent
+                # Allow mini-batch when kernel approximation (feature_map) was applied
+                if (self.kernel_name != 'linear') and (self.feature_map is None):
+                    logger.warning('Mini-batch is supported efficiently only for linear kernel (or when kernel approximation is used); falling back to full-batch')
+                    loss = self._compute_hinge_loss(X, y)
+                    self.loss_history.append(loss)
+                    dw, db = self._compute_gradients(X, y)
+                    self.weights -= self.learning_rate * dw
+                    self.bias -= self.learning_rate * db
+                else:
+                    indices = np.random.permutation(n_samples)
+                    total_loss = 0.0
+                    n_batches = 0
+                    for start_idx in range(0, n_samples, self.batch_size):
+                        end_idx = min(start_idx + self.batch_size, n_samples)
+                        batch_idx = indices[start_idx:end_idx]
+                        X_batch = X[batch_idx]
+                        y_batch = y[batch_idx]
+                        loss_b = self._compute_hinge_loss(X_batch, y_batch)
+                        total_loss += loss_b
+                        n_batches += 1
+                        dw, db = self._compute_gradients(X_batch, y_batch)
+                        self.weights -= self.learning_rate * dw
+                        self.bias -= self.learning_rate * db
+                    loss = total_loss / max(1, n_batches)
+                    self.loss_history.append(loss)
+
+            else:
+                raise ValueError(f"Unknown optimization method: {self.optimization}")
+
             # Print progress
             if self.verbose and (iteration + 1) % 100 == 0:
-                logger.info(f"Iteration {iteration + 1}/{self.max_iterations}, Loss: {loss:.6f}")
-            
+                logger.info(f"Iteration {iteration + 1}/{self.max_iterations}, Loss: {self.loss_history[-1]:.6f}")
+
             # Check convergence
             if iteration > 0 and abs(self.loss_history[-1] - self.loss_history[-2]) < self.tolerance:
                 if self.verbose:
@@ -249,6 +340,15 @@ class SVM:
         Returns:
             Decision values
         """
+        # If a feature map (kernel approximation) was used during training, apply it here
+        if getattr(self, 'feature_map', None) is not None:
+            try:
+                X_trans = self.feature_map.transform(X)
+            except Exception:
+                # Fallback to fit_transform if transform not available
+                X_trans = self.feature_map.fit_transform(X)
+            return np.dot(X_trans, self.weights) + self.bias
+
         return np.dot(X, self.weights) + self.bias
     
     def predict(self, X: np.ndarray) -> np.ndarray:
