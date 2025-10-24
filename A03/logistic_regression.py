@@ -4,7 +4,7 @@ Supports binary and multi-class classification
 """
 
 import numpy as np
-from typing import Tuple, Optional
+from typing import Tuple
 import logging
 import utils
 import config

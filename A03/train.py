@@ -5,9 +5,7 @@ Main training script for the Intrusion Detection System
 import numpy as np
 import argparse
 import logging
-import json
 import os
-from typing import Tuple
 import config
 import utils
 from logistic_regression import LogisticRegression

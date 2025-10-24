@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import logging
 import os
-from typing import List, Optional
+from typing import List
 import config
 
 logger = logging.getLogger(__name__)

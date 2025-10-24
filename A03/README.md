@@ -73,7 +73,7 @@ Run the main training script:
 ```bash
 python train.py --model logistic --binary
 python train.py --model svm --kernel rbf
-python train.py --model both --multiclass
+python train.py --model both
 ```
 
 ### Preprocessing and EDA

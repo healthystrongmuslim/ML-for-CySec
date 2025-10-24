@@ -6,7 +6,7 @@ import numpy as np
 import logging
 import json
 import pickle
-from typing import Tuple, Dict, Any, List
+from typing import Tuple, Dict, Any
 import config
 
 # Setup logging

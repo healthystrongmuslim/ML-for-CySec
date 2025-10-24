@@ -15,7 +15,7 @@ This document summarizes all files created for the A03 Intrusion Detection Syste
 
 ### 2. **requirements.txt** (387 bytes)
 - Python package dependencies
-- Core libraries: numpy, pandas, scipy
+- Core libraries: numpy, pandas
 - Visualization: matplotlib, seaborn, plotly
 - Interpretability: shap, lime
 - Preprocessing: scikit-learn, imbalanced-learn

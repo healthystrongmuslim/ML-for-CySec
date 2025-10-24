@@ -4,16 +4,16 @@ Supports multiple kernel functions
 """
 
 import numpy as np
-from typing import Callable, Optional
+from typing import Callable
 import logging
 import utils
 import config
-# Optional kernel approximation imports
+from kernel_approx import RBFSampler
+
+# Optional sklearn preprocessing for polynomial features
 try:
-    from sklearn.kernel_approximation import RBFSampler
     from sklearn.preprocessing import PolynomialFeatures
 except Exception:
-    RBFSampler = None
     PolynomialFeatures = None
 
 logger = logging.getLogger(__name__)
@@ -188,10 +188,7 @@ class SVM:
             # If using non-linear kernel with SGD/mini-batch, use kernel approximation mapping
             if self.kernel_name in ('rbf', 'polynomial') and self.optimization in ('sgd', 'mini_batch'):
                 if self.kernel_name == 'rbf':
-                    if RBFSampler is None:
-                        logger.warning('RBFSampler not available; falling back to full-batch kernel computations')
-                        self._fit_binary(X, y_binary)
-                        return self
+                    # Use local RBFSampler implementation
                     n_components = config.SVM.get('rff_components', 200)
                     self.feature_map = RBFSampler(gamma=self.gamma_value, n_components=n_components, random_state=config.RANDOM_STATE)
                     X_mapped = self.feature_map.fit_transform(X)
