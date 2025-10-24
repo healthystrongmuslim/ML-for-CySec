@@ -77,7 +77,7 @@ class Visualizer:
             logger.info(f"Saved confusion matrix to {filepath}")
         
         plt.show(block=False)
-        plt.close()
+        # plt.close()
     
     def plot_roc_curve(self, y_true: np.ndarray, y_scores: np.ndarray,
                       title: str = 'ROC Curve', filename: str = None) -> None:
@@ -113,7 +113,7 @@ class Visualizer:
             logger.info(f"Saved ROC curve to {filepath}")
         
         plt.show(block=False)
-        plt.close()
+        # plt.close()
     
     def plot_precision_recall_curve(self, y_true: np.ndarray, y_scores: np.ndarray,
                                    title: str = 'Precision-Recall Curve',
@@ -149,7 +149,7 @@ class Visualizer:
             logger.info(f"Saved precision-recall curve to {filepath}")
         
         plt.show(block=False)
-        plt.close()
+        # plt.close()
     
     def plot_training_history(self, loss_history: List[float],
                             title: str = 'Training Loss',
@@ -176,7 +176,7 @@ class Visualizer:
             logger.info(f"Saved training history to {filepath}")
         
         plt.show(block=False)
-        plt.close()
+        # plt.close()
     
     def plot_decision_boundary(self, model, X: np.ndarray, y: np.ndarray,
                              feature_indices: Tuple[int, int] = (0, 1),
@@ -237,7 +237,7 @@ class Visualizer:
             logger.info(f"Saved decision boundary to {filepath}")
         
         plt.show(block=False)
-        plt.close()
+        # plt.close()
     
     def plot_feature_importance(self, importance: np.ndarray,
                                feature_names: List[str] = None,
@@ -276,7 +276,7 @@ class Visualizer:
             logger.info(f"Saved feature importance to {filepath}")
         
         plt.show(block=False)
-        plt.close()
+        # plt.close()
     
     def plot_class_distribution(self, y: np.ndarray, class_names: List[str] = None,
                                title: str = 'Class Distribution',
@@ -308,7 +308,7 @@ class Visualizer:
             logger.info(f"Saved class distribution to {filepath}")
         
         plt.show(block=False)
-        plt.close()
+        # # plt.close()
     
     def plot_metrics_comparison(self, metrics_dict: dict,
                               title: str = 'Model Comparison',
@@ -346,7 +346,7 @@ class Visualizer:
             logger.info(f"Saved metrics comparison to {filepath}")
         
         plt.show(block=False)
-        plt.close()
+        # plt.close()
     
     def plot_robustness_analysis(self, noise_levels: List[float],
                                 accuracies: List[float],
@@ -375,7 +375,7 @@ class Visualizer:
             logger.info(f"Saved robustness analysis to {filepath}")
         
         plt.show(block=False)
-        plt.close()
+        # plt.close()
 
 
 def main():
