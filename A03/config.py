@@ -18,14 +18,14 @@ for dir_path in [DATA_DIR, RESULTS_DIR, PLOTS_DIR, INTERPRETABILITY_DIR, LOGS_DI
     os.makedirs(dir_path, exist_ok=True)
 
 # Dataset settings
-DATASET_FILES = [
-    'Monday-WorkingHours.pcap_ISCX.csv',
-    'Tuesday-WorkingHours.pcap_ISCX.csv',
-    'Wednesday-workingHours.pcap_ISCX.csv',
-    'Thursday-WorkingHours-Morning-WebAttacks.pcap_ISCX.csv',
-    'Thursday-WorkingHours-Afternoon-Infilteration.pcap_ISCX.csv',
-    'Friday-WorkingHours-Morning.pcap_ISCX.csv',
-    'Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv'
+DATASET_FILES = [ # followed by class distribution comments
+    # 'Monday-WorkingHours.pcap_ISCX.csv', # BAD.  has no positive/malicious class
+    'Tuesday-WorkingHours.pcap_ISCX.csv', # GOOD. BENIGN:432074  FTP-Patator:7938  SSH-Patator:5897
+    'Wednesday-workingHours.pcap_ISCX.csv',  # GOOD but huge.  BENIGN:440031  DoSHulk:231073  DoSGoldenEye:10293  DoSslowloris:5796  DoSSlowhttptest:5499  Heartbleed:11
+    'Thursday-WorkingHours-Morning-WebAttacks.pcap_ISCX.csv', # MEH.  BENIGN:168186  WebAttack�BruteForce:1507  WebAttack�XSS:652  WebAttack�SqlInjection:21
+    # 'Thursday-WorkingHours-Afternoon-Infilteration.pcap_ISCX.csv', # BAD.  BENIGN:288566  Infiltration:36
+    'Friday-WorkingHours-Morning.pcap_ISCX.csv', # MEH.  BENIGN:189067  Bot:1966
+    'Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX.csv' # GOOD.  PortScan:158930  BENIGN:127537
 ]
 
 # Preprocessing settings
