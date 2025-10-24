@@ -25,6 +25,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Silence verbose SHAP logging (reduce info/debug noise from SHAP library)
+logging.getLogger("shap").setLevel(logging.WARNING)
+
 
 def evaluate_model(model, X_test: np.ndarray, y_test: np.ndarray,
                   model_name: str = 'Model') -> dict:
