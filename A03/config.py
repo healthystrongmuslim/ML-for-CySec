@@ -20,12 +20,13 @@ for dir_path in [DATA_DIR, RESULTS_DIR, PLOTS_DIR, INTERPRETABILITY_DIR, LOGS_DI
 # Dataset settings
 DATASET_FILES = [ # followed by class distribution comments
     # 'Monday-WorkingHours.pcap_ISCX.csv', # BAD.  has no positive/malicious class
-    'Tuesday-WorkingHours.pcap_ISCX.csv', # GOOD. BENIGN:432074  FTP-Patator:7938  SSH-Patator:5897
-    'Wednesday-workingHours.pcap_ISCX.csv',  # GOOD but huge.  BENIGN:440031  DoSHulk:231073  DoSGoldenEye:10293  DoSslowloris:5796  DoSSlowhttptest:5499  Heartbleed:11
-    'Thursday-WorkingHours-Morning-WebAttacks.pcap_ISCX.csv', # MEH.  BENIGN:168186  WebAttack�BruteForce:1507  WebAttack�XSS:652  WebAttack�SqlInjection:21
-    # 'Thursday-WorkingHours-Afternoon-Infilteration.pcap_ISCX.csv', # BAD.  BENIGN:288566  Infiltration:36
-    'Friday-WorkingHours-Morning.pcap_ISCX.csv', # MEH.  BENIGN:189067  Bot:1966
-    'Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX.csv' # GOOD.  PortScan:158930  BENIGN:127537
+    'Tuesday-WorkingHours.pcap_ISCX.csv', # GOOD. BENIGN:432074(96%)  FTP-Patator:7938  SSH-Patator:5897
+    'Wednesday-workingHours.pcap_ISCX.csv',  # GOOD but huge.  BENIGN:440031(63%)  DoSHulk:231073  DoSGoldenEye:10293  DoSslowloris:5796  DoSSlowhttptest:5499  Heartbleed:11
+    'Thursday-WorkingHours-Morning-WebAttacks.pcap_ISCX.csv', # MEH.  BENIGN:168186(98%)  WebAttack�BruteForce:1507  WebAttack�XSS:652  WebAttack�SqlInjection:21
+    # 'Thursday-WorkingHours-Afternoon-Infilteration.pcap_ISCX.csv', # BAD.  BENIGN:288566(99%)  Infiltration:36
+    'Friday-WorkingHours-Morning.pcap_ISCX.csv', # MEH.  BENIGN:189067(99%)  Bot:1966
+    'Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX.csv' # GOOD.  BENIGN:127537(44%)  PortScan:158930  
+    'Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv' # GOOD. BENIGN:97718(43%)  DDoS:128027
 ]
 
 # Preprocessing settings
